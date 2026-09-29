@@ -1,1 +1,1 @@
-# nostr-torrent-
+# nostr-torrent
