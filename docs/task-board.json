@@ -1,0 +1,53 @@
+{
+  "board": "nostr-torrent",
+  "tasks": [
+    {
+      "key": "NT-01",
+      "title": "Application foundation and safe catalogue",
+      "assignee": "nostr-builder",
+      "id": "t_3c38df83"
+    },
+    {
+      "key": "NT-02",
+      "title": "Bounded verified Nostr relay reads",
+      "assignee": "nostr-builder",
+      "id": "t_d493216b"
+    },
+    {
+      "key": "NT-03",
+      "title": "Controlled WebRTC playback proof",
+      "assignee": "nostr-builder",
+      "id": "t_4d502037"
+    },
+    {
+      "key": "NT-04",
+      "title": "Explicit HTTP playback and transport provenance",
+      "assignee": "nostr-builder",
+      "id": "t_78e79683"
+    },
+    {
+      "key": "NT-05",
+      "title": "Independent security and desktop browser QA",
+      "assignee": "nostr-reviewer",
+      "id": "t_7760d5fc"
+    },
+    {
+      "key": "NT-06",
+      "title": "Physical Android and iOS playback validation",
+      "assignee": "nostr-reviewer",
+      "id": "t_00f13510"
+    },
+    {
+      "key": "NT-07",
+      "title": "Creator pages and private local library",
+      "assignee": "nostr-builder",
+      "id": "t_0fcd7450"
+    },
+    {
+      "key": "NT-08",
+      "title": "Desktop and webOS feasibility",
+      "assignee": "nostr-builder",
+      "id": "t_7611b24b"
+    }
+  ]
+}

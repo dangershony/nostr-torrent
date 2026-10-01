@@ -4,7 +4,7 @@
 A simple video-only Nostr client combining film/documentary browsing with creator channels. Viewers choose a video and press Play; torrent mechanics stay behind the interface. Target web, mobile, desktop and TVs, including LG webOS. Native platform support is a goal, not an existing feature.
 
 ## Confirmed decisions
-- Owner: dangershony. Repository: dangershony/nostr-torrent. Keep private.
+- Owner: dangershony. Repository: dangershony/nostr-torrent. Owner subsequently authorized public repository visibility and GitHub Pages deployment.
 - All external repository changes are restricted to this repository.
 - TypeScript and React for the initial client; WebTorrent for the first browser transport experiment.
 - Nostr carries signed catalogue and social metadata; video travels through peers or optional HTTP sources.
