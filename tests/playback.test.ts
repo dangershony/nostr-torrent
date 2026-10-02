@@ -4,6 +4,21 @@ import type { Source } from '../src/catalogue/model';
 const http:Source={type:'http',url:'https://media.example/a.mp4',mime:'video/mp4'};
 const peer:Source={type:'p2p',infoHash:'a'.repeat(40),trackers:[]};
 afterEach(()=>vi.useRealTimers());
+it.each([['pause','Paused'],['ended','Finished']])('reports %s without claiming playback continues', (event,message)=>{
+ const media=document.createElement('video');const adapter:Adapter={open:(_m,_s,_signal,ready)=>{ready();return vi.fn()}};const state=vi.fn();const p=new Playback(media,{http:adapter,p2p:adapter},state);
+ p.start(http,true);media.dispatchEvent(new Event('playing'));media.dispatchEvent(new Event(event));
+ expect(state.mock.lastCall?.[0]).toMatchObject({phase:'ready',transport:'http',message:expect.stringContaining(message)});p.stop();
+});
+it('keeps a loaded source usable with native controls when the browser blocks play',async()=>{
+ const media=document.createElement('video');media.load=vi.fn();media.pause=vi.fn();media.canPlayType=vi.fn(()=>'probably' as const);media.play=vi.fn().mockRejectedValue(new DOMException('Gesture required','NotAllowedError'));
+ const state=vi.fn();const p=new Playback(media,{http:httpAdapter,p2p:unavailablePeerAdapter},state);
+ p.start(http,true,true);await Promise.resolve();media.dispatchEvent(new Event('loadeddata'));
+ expect(media.src).toBe(http.url);expect(state.mock.lastCall?.[0]).toMatchObject({phase:'ready',transport:'http',message:expect.stringMatching(/browser.*blocked.*native.*Play/i)});p.stop();
+});
+it('ignores a stale play rejection after stopping or switching sources',async()=>{
+ const media=document.createElement('video');let reject!:(error:Error)=>void;media.play=vi.fn(()=>new Promise<void>((_resolve,r)=>{reject=r}));const release=vi.fn();const adapter:Adapter={open:(_m,_s,_signal,ready)=>{ready();return release}};const state=vi.fn();const p=new Playback(media,{http:adapter,p2p:adapter},state);
+ p.start(http,true,true);p.stop();state.mockClear();reject(Error('aborted'));await Promise.resolve();expect(state).not.toHaveBeenCalled();expect(release).toHaveBeenCalledOnce();
+});
 it.each([false,true])('keeps buffered playback alive after stalled without another playing event (progress events: %s)',withProgress=>{
  vi.useFakeTimers();const media=document.createElement('video');Object.defineProperty(media,'readyState',{value:3,configurable:true});Object.defineProperty(media,'paused',{value:false,configurable:true});
  const release=vi.fn();const adapter:Adapter={open:(_m,_s,_signal,ready)=>{ready();return release}};const state=vi.fn();const player=new Playback(media,{http:adapter,p2p:adapter},state);

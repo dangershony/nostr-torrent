@@ -20,6 +20,7 @@ Open http://127.0.0.1:5173. The development server binds to loopback only. No ac
 ## Documentation
 
 - [Scope and roadmap](docs/PROJECT.md)
+- [Video playback, demo provenance and real-browser verification](docs/VIDEO-PLAYBACK.md)
 - [Implementation and verified limitations](docs/IMPLEMENTATION.md)
 - [Task index](docs/TASKS.md)
 - [Earlier desktop smoke evidence](docs/DESKTOP-SMOKE.md)
