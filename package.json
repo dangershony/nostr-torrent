@@ -8,18 +8,22 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:video": "playwright test"
+    "test:video": "playwright test",
+    "test:torrent": "playwright test e2e/torrent.pw.ts",
+    "demo:p2p": "node scripts/local-p2p.mjs"
   },
   "dependencies": {
     "nostr-tools": "2.25.2",
     "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react-dom": "19.2.7",
+    "webtorrent": "3.0.21"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "@types/node": "26.6.4",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
+    "bittorrent-tracker": "11.2.3",
     "jsdom": "29.1.1",
     "prettier": "3.9.5",
     "typescript": "6.0.3",

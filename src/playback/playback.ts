@@ -13,10 +13,9 @@ export const httpAdapter:Adapter={open(media,source,signal,ready,error){
  try{media.src=source.url;media.load();}catch(e){cleanup();throw e;}
  return ()=>{signal.removeEventListener('abort',cleanup);cleanup();};
 }};
-export const unavailablePeerAdapter:Adapter={open(){throw Error('Browser WebTorrent is unavailable in this build. A controlled WebRTC seed and browser engine must be verified first. No HTTP source was loaded.');}};
 export class Playback {
  private dispose?:()=>void;
- constructor(private media:HTMLVideoElement,private adapters:Record<Source['type'],Adapter>,private update:(s:State)=>void){}
+ constructor(private media:HTMLVideoElement,private adapters:Partial<Record<Source['type'],Adapter>>,private update:(s:State)=>void){}
  start(source:Source,consent:boolean,play=false){
   this.stop();if(!consent){this.update({phase:'error',transport:'none',message:'Consent is required for this source.'});return;}
   const abort=new AbortController();let active=true,release:(()=>void)|undefined;
@@ -43,7 +42,9 @@ export class Playback {
   this.dispose=cleanup;
   this.update({phase:'connecting',transport:'none',message:`Connecting via ${source.type==='p2p'?'P2P':'HTTP'}…`});
   try{
-   release=this.adapters[source.type].open(this.media,source,abort.signal,()=>{if(!active)return;hasData=true;clearTimeout(timer);this.update({phase:'ready',transport:source.type,message:playBlocked?blockedMessage:'Ready. Use the player controls to play or seek.'});},fail);
+   const adapter=this.adapters[source.type];
+   if(!adapter)throw Error('Use the WebTorrent metadata panel and explicitly choose a file.');
+   release=adapter.open(this.media,source,abort.signal,()=>{if(!active)return;hasData=true;clearTimeout(timer);this.update({phase:'ready',transport:source.type,message:playBlocked?blockedMessage:'Ready. Use the player controls to play or seek.'});},fail);
    if(!active)release();
    // Invoke during the original button gesture, not after an async loadeddata callback.
    else if(play)void this.media.play().catch(error=>{

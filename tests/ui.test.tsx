@@ -2,7 +2,24 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { it, expect, afterEach, vi } from 'vitest';
 import App from '../src/ui/App';
+import { fixtures } from '../src/catalogue/fixtures';
 let root:Root;let host:HTMLDivElement;
+it.each([false,true])('preserves explicit HTTP/P2P alternatives in either source order (peer first=%s)',async peerFirst=>{
+ const film=fixtures.find(v=>v.title==='Sintel')!;const saved=film.sources;
+ const http=saved[0],peer={type:'p2p' as const,infoHash:'b'.repeat(40),trackers:['wss://selected.example/']};
+ film.sources=peerFirst?[peer,http]:[http,peer];
+ try{
+  await mount();await click('Sintel');
+  const select=host.querySelector<HTMLSelectElement>('#source');expect(select).not.toBeNull();expect(select!.options).toHaveLength(2);
+  await act(async()=>{select!.value=String(peerFirst?0:1);select!.dispatchEvent(new Event('change',{bubbles:true}));});
+  expect(host.querySelector<HTMLInputElement>('#peer-hash')?.value).toBe(peer.infoHash);
+  expect(host.querySelector<HTMLInputElement>('#peer-tracker')?.value).toBe(peer.trackers[0]);
+  expect(host.querySelector('video')?.hasAttribute('src')).toBe(false);
+  await act(async()=>{select!.value=String(peerFirst?1:0);select!.dispatchEvent(new Event('change',{bubbles:true}));});
+  expect(host.querySelector('#peer-hash')).toBeNull();expect(host.textContent).toContain('Play via HTTP');
+  expect(host.querySelector<HTMLInputElement>('input[type=checkbox]')?.checked).toBe(false);
+ }finally{film.sources=saved;}
+});
 it('closes an in-progress relay subscription when opening video details',async()=>{
  vi.useFakeTimers({toFake:['setTimeout','clearTimeout']});
  const schedule=vi.spyOn(globalThis,'setTimeout'),cancel=vi.spyOn(globalThis,'clearTimeout');
@@ -21,6 +38,27 @@ it('closes an in-progress relay subscription when opening video details',async()
   const deadline=schedule.mock.calls.findIndex(call=>call[1]===10000);expect(deadline).toBeGreaterThanOrEqual(0);
   expect(cancel).toHaveBeenCalledWith(schedule.mock.results[deadline].value);expect(host.querySelector('#detail-title')?.textContent).toBe('Relay film');
  }finally{vi.useRealTimers();vi.unstubAllGlobals();}
+});
+it('opens a signed torrent in the controlled peer form without starting a connection',async()=>{
+ const {finalizeEvent,generateSecretKey}=await import('nostr-tools');
+ class FakeSocket{readyState=1;onopen:(()=>void)|null=null;onmessage:((e:{data:string})=>void)|null=null;onerror=null;onclose=null;send=vi.fn();close=vi.fn();constructor(){sockets.push(this)}}
+ const sockets:FakeSocket[]=[];vi.stubGlobal('WebSocket',FakeSocket);
+ try{
+  await mount();await click('Relay catalogue');const input=host.querySelector<HTMLInputElement>('#relays')!;
+  await act(async()=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(input,'wss://relay.example');input.dispatchEvent(new Event('input',{bubbles:true}));});await click('Read relays');
+  const socket=sockets[0];socket.onopen?.();const id=JSON.parse(socket.send.mock.calls[0][0])[1];
+  const event=finalizeEvent({kind:2003,created_at:1,content:'',tags:[['title','Peer film'],['x','a'.repeat(40)],['file','demo.mp4'],['tracker','wss://tracker.example']]},generateSecretKey());
+  await act(async()=>socket.onmessage?.({data:JSON.stringify(['EVENT',id,event])}));await click('Peer film');
+  expect(host.querySelector<HTMLInputElement>('#peer-hash')?.value).toBe('a'.repeat(40));
+  expect(host.querySelector<HTMLInputElement>('#peer-tracker')?.value).toBe('wss://tracker.example/');
+  expect(host.querySelector('video')?.hasAttribute('src')).toBe(false);
+  expect(host.textContent).toContain('No HTTP media fallback');expect(sockets).toHaveLength(1);
+ }finally{vi.unstubAllGlobals();}
+});
+it('discloses that the four-wire limit does not cap transient WebRTC signaling connections',async()=>{
+ await mount();await click('Controlled P2P demo');
+ expect(host.textContent).toContain('4 established WebRTC wires');
+ expect(host.textContent).toContain('transient signaling connections can exceed this');
 });
 async function mount(){host=document.createElement('div');document.body.append(host);root=createRoot(host);await act(async()=>root.render(<App/>));}
 async function click(text:string){const button=Array.from(host.querySelectorAll('button')).find(x=>x.textContent?.includes(text));expect(button).toBeDefined();await act(async()=>button!.click());}

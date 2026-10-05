@@ -1,0 +1,108 @@
+[
+  {
+    "browser": "151.0.7922.173",
+    "viewport": "desktop",
+    "hash": "5385a101a28dbad85ba31bcc6e5b70556d7b6323",
+    "trackerUrl": "wss://127.0.0.1:44485",
+    "early": {
+      "peers": 1,
+      "downloaded": 938220,
+      "uploaded": 1532,
+      "length": 22548716,
+      "verifiedPieces": 15,
+      "peerDownloaded": 938220,
+      "peerUploaded": 0
+    },
+    "final": {
+      "peers": 1,
+      "downloaded": 3035372,
+      "uploaded": 4421,
+      "length": 22548716,
+      "verifiedPieces": 47,
+      "peerDownloaded": 3035372,
+      "peerUploaded": 0
+    },
+    "upload": {
+      "peers": 1,
+      "downloaded": 22548716,
+      "uploaded": 2962997,
+      "length": 22548716,
+      "verifiedPieces": 345,
+      "peerDownloaded": 0,
+      "peerUploaded": 3363052
+    },
+    "rtc": [
+      {
+        "type": "data-channel",
+        "bytesReceived": 3094173,
+        "bytesSent": 4421
+      }
+    ],
+    "playback": {
+      "currentTime": 90.735214,
+      "decodedFrames": 207,
+      "readyState": 4,
+      "width": 640,
+      "height": 360
+    },
+    "networkMedia": [],
+    "unexpectedHttp": [],
+    "errors": [],
+    "zeroPeerMs": 20496,
+    "allPeerConnectionsClosed": true,
+    "noHttpMediaFallback": true
+  },
+  {
+    "browser": "151.0.7922.173",
+    "viewport": "narrow",
+    "hash": "5385a101a28dbad85ba31bcc6e5b70556d7b6323",
+    "trackerUrl": "wss://127.0.0.1:41497",
+    "early": {
+      "peers": 1,
+      "downloaded": 938220,
+      "uploaded": 1532,
+      "length": 22548716,
+      "verifiedPieces": 15,
+      "peerDownloaded": 938220,
+      "peerUploaded": 0
+    },
+    "final": {
+      "peers": 1,
+      "downloaded": 3035372,
+      "uploaded": 4421,
+      "length": 22548716,
+      "verifiedPieces": 47,
+      "peerDownloaded": 3035372,
+      "peerUploaded": 0
+    },
+    "upload": {
+      "peers": 1,
+      "downloaded": 22548716,
+      "uploaded": 3077776,
+      "length": 22548716,
+      "verifiedPieces": 345,
+      "peerDownloaded": 0,
+      "peerUploaded": 3690732
+    },
+    "rtc": [
+      {
+        "type": "data-channel",
+        "bytesReceived": 3110570,
+        "bytesSent": 4430
+      }
+    ],
+    "playback": {
+      "currentTime": 90.774138,
+      "decodedFrames": 209,
+      "readyState": 4,
+      "width": 640,
+      "height": 360
+    },
+    "networkMedia": [],
+    "unexpectedHttp": [],
+    "errors": [],
+    "zeroPeerMs": 20512,
+    "allPeerConnectionsClosed": true,
+    "noHttpMediaFallback": true
+  }
+]

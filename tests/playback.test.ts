@@ -1,5 +1,5 @@
 import { it, expect, vi, afterEach } from 'vitest';
-import { Playback, httpAdapter, unavailablePeerAdapter, type Adapter } from '../src/playback/playback';
+import { Playback, httpAdapter, type Adapter } from '../src/playback/playback';
 import type { Source } from '../src/catalogue/model';
 const http:Source={type:'http',url:'https://media.example/a.mp4',mime:'video/mp4'};
 const peer:Source={type:'p2p',infoHash:'a'.repeat(40),trackers:[]};
@@ -11,7 +11,7 @@ it.each([['pause','Paused'],['ended','Finished']])('reports %s without claiming 
 });
 it('keeps a loaded source usable with native controls when the browser blocks play',async()=>{
  const media=document.createElement('video');media.load=vi.fn();media.pause=vi.fn();media.canPlayType=vi.fn(()=>'probably' as const);media.play=vi.fn().mockRejectedValue(new DOMException('Gesture required','NotAllowedError'));
- const state=vi.fn();const p=new Playback(media,{http:httpAdapter,p2p:unavailablePeerAdapter},state);
+ const state=vi.fn();const p=new Playback(media,{http:httpAdapter},state);
  p.start(http,true,true);await Promise.resolve();media.dispatchEvent(new Event('loadeddata'));
  expect(media.src).toBe(http.url);expect(state.mock.lastCall?.[0]).toMatchObject({phase:'ready',transport:'http',message:expect.stringMatching(/browser.*blocked.*native.*Play/i)});p.stop();
 });
@@ -43,7 +43,7 @@ it.each(['pause','ended'])('cancels a pending stall on %s',event=>{
 });
 it.each(['waiting','stalled'])('bounds %s after initial data without extending the deadline on repeated stalls',event=>{
  vi.useFakeTimers();const media=document.createElement('video');Object.defineProperty(media,'paused',{value:false,configurable:true});media.load=vi.fn();media.pause=vi.fn();media.canPlayType=vi.fn(()=>'probably' as const);
- const state=vi.fn();const player=new Playback(media,{http:httpAdapter,p2p:unavailablePeerAdapter},state);
+ const state=vi.fn();const player=new Playback(media,{http:httpAdapter},state);
  player.start(http,true);media.dispatchEvent(new Event('loadeddata'));media.dispatchEvent(new Event(event));
  vi.advanceTimersByTime(19000);media.dispatchEvent(new Event(event));vi.advanceTimersByTime(1000);
  expect(state.mock.lastCall?.[0]).toMatchObject({phase:'error',transport:'none',message:expect.stringMatching(/stall.*retry/i)});
@@ -74,13 +74,13 @@ it('times out, cleans up, retries and cancels without stale callbacks',()=>{
  p.start(peer,true);vi.advanceTimersByTime(20000);expect(dispose).toHaveBeenCalledOnce();expect(state.mock.lastCall?.[0].phase).toBe('error');ready();expect(state.mock.lastCall?.[0].phase).toBe('error');p.start(peer,true);ready();expect(state.mock.lastCall?.[0].transport).toBe('p2p');p.stop();expect(dispose).toHaveBeenCalledTimes(2);expect(vi.getTimerCount()).toBe(0);
 });
 it('HTTP sets no source until open, supports native controls, and removes it on error/stop',()=>{
- const media=document.createElement('video');media.load=vi.fn();media.pause=vi.fn();media.canPlayType=vi.fn(()=>'probably' as const);const state=vi.fn();const p=new Playback(media,{http:httpAdapter,p2p:unavailablePeerAdapter},state);
+ const media=document.createElement('video');media.load=vi.fn();media.pause=vi.fn();media.canPlayType=vi.fn(()=>'probably' as const);const state=vi.fn();const p=new Playback(media,{http:httpAdapter},state);
  expect(media.hasAttribute('src')).toBe(false);p.start(http,true);expect(media.src).toBe(http.url);media.dispatchEvent(new Event('loadeddata'));expect(state.mock.lastCall?.[0].transport).toBe('http');media.dispatchEvent(new Event('error'));expect(media.hasAttribute('src')).toBe(false);expect(media.pause).toHaveBeenCalled();expect(state.mock.lastCall?.[0].phase).toBe('error');
 });
-it('rejects unsupported formats and peer engine absence without loading HTTP',()=>{
- const media=document.createElement('video');media.canPlayType=vi.fn(()=>'' as const);media.load=vi.fn();media.pause=vi.fn();const state=vi.fn();const p=new Playback(media,{http:httpAdapter,p2p:unavailablePeerAdapter},state);p.start(http,true);expect(media.hasAttribute('src')).toBe(false);expect(state.mock.lastCall?.[0].message).toMatch(/format/i);p.start(peer,true);expect(state.mock.lastCall?.[0].message).toMatch(/WebTorrent/);
+it('rejects unsupported formats and requires the dedicated peer file-selection flow without loading HTTP',()=>{
+ const media=document.createElement('video');media.canPlayType=vi.fn(()=>'' as const);media.load=vi.fn();media.pause=vi.fn();const state=vi.fn();const p=new Playback(media,{http:httpAdapter},state);p.start(http,true);expect(media.hasAttribute('src')).toBe(false);expect(state.mock.lastCall?.[0].message).toMatch(/format/i);p.start(peer,true);expect(state.mock.lastCall?.[0].message).toMatch(/WebTorrent/);
 });
 it('releases media resources exactly once and aborts a pending request on stop',()=>{
  const media=document.createElement('video');media.canPlayType=vi.fn(()=>'probably' as const);media.pause=vi.fn();media.load=vi.fn();
- const p=new Playback(media,{http:httpAdapter,p2p:unavailablePeerAdapter},()=>{});p.start(http,true);p.stop();p.stop();expect(media.pause).toHaveBeenCalledTimes(1);expect(media.hasAttribute('src')).toBe(false);
+ const p=new Playback(media,{http:httpAdapter},()=>{});p.start(http,true);p.stop();p.stop();expect(media.pause).toHaveBeenCalledTimes(1);expect(media.hasAttribute('src')).toBe(false);
 });
